@@ -306,9 +306,7 @@ export class GameService {
         // Actualizar sesión
         session.finalScore = totalScore;
         session.isCompleted = true;
-        await this.gameRepo.save(session);
-
-        // Determinar si pasó el nivel (necesita al menos 3 palabras correctas)
+        await this.gameRepo.save(session);        // Determinar si pasó el nivel (necesita al menos 3 palabras correctas)
         const levelPassed = correctWords >= 3;
 
         if (levelPassed) {
@@ -318,7 +316,13 @@ export class GameService {
                 totalScore,
                 correctWords === 5
             );
-        }
+
+            // Dar puntos al usuario por completar el nivel
+            const pointsEarned = Math.floor(totalScore * 0.5); // 50% del puntaje como puntos de cosmético
+            session.user.totalPoints += pointsEarned;
+            session.user.availablePoints += pointsEarned;
+            await this.userRepo.save(session.user);
+        }        const pointsEarned = levelPassed ? Math.floor(totalScore * 0.5) : 0;
 
         return {
             sessionId: session.id,
@@ -327,6 +331,9 @@ export class GameService {
             totalWords: 5,
             levelPassed,
             levelCompleted: correctWords === 5,
+            pointsEarned,
+            totalPoints: session.user.totalPoints,
+            availablePoints: session.user.availablePoints,
             wordsResult: session.wordsAttempted.map(word => ({
                 word: word.wordText,
                 userAnswer: word.userAnswer,
