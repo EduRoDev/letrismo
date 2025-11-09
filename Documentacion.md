@@ -100,7 +100,7 @@ Elimina un usuario de la base de datos.
 
 ---
 
-##  Palabras
+## Palabras
 
 #### POST `/words/create`
 Crear una palabra asociada a un nivel.
