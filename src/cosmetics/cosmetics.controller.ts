@@ -4,6 +4,8 @@ import { CosmeticsService } from './cosmetics.service';
 @Controller('cosmetics')
 export class CosmeticsController {
     constructor(private readonly cosmeticsService: CosmeticsService) {}    @Post('create')
+    
+    @Post('create')
     async createCosmetic(@Body() body: {
         name: string;
         description: string;

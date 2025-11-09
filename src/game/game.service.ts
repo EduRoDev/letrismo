@@ -56,7 +56,8 @@ export class GameService {
             isCompleted: false
         });
 
-        const savedSession = await this.gameRepo.save(gameSession);        const levelFocus = this.getLevelTherapeuticFocus(levelNumber);
+        const savedSession = await this.gameRepo.save(gameSession);        
+        const levelFocus = this.getLevelTherapeuticFocus(levelNumber);
         const levelInstruction = this.getLevelInstruction(levelNumber);
 
         return {
