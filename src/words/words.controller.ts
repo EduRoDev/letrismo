@@ -1,4 +1,7 @@
-import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { WordsService } from './words.service';
 
 @Controller('words')
@@ -8,8 +11,40 @@ export class WordsController {
     ) { }
 
     @Post('/create')
-    async create(@Body('text') text: string, @Body('levelId') levelId: number) {
-        const word = await this.wordService.create(text, levelId);
+    @UseInterceptors(FileInterceptor('image', {
+        storage: diskStorage({
+            destination: './public/images/words',
+            filename: (req, file, callback) => {
+                
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const ext = extname(file.originalname);
+                const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
+                callback(null, filename);
+            }
+        }),
+        fileFilter: (req, file, callback) => {
+            
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+                return callback(new BadRequestException('Solo se permiten archivos de imagen (jpg, jpeg, png, gif, webp)'), false);
+            }
+            callback(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024 
+        }
+    }))
+    async create(
+        @UploadedFile() file: any,
+        @Body('text') text: string, 
+        @Body('levelId') levelId: string
+    ) {
+        if (!file) {
+            throw new BadRequestException('Se requiere una imagen');
+        }
+
+        const imageUrl = `/images/words/${file.filename}`;
+
+        const word = await this.wordService.create(text, Number(levelId), imageUrl);
         if (!word) {
             throw new HttpException('Failed to create word', 400);
         }

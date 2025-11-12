@@ -103,15 +103,26 @@ Elimina un usuario de la base de datos.
 ## Palabras
 
 #### POST `/words/create`
-Crear una palabra asociada a un nivel.
+Crear una palabra asociada a un nivel **subiendo una imagen de ejemplo**.
 
-**Body:**
-```json
-{
-  "text": "vaca",
-  "levelId": 1
-}
-```
+**IMPORTANTE:** Este endpoint usa `multipart/form-data` para subir archivos.
+
+**Requisitos:**
+- Formato de imagen: JPG, JPEG, PNG, GIF, WEBP
+- Tamaño máximo: 5MB
+- La imagen se guarda en: `public/images/words/`
+
+**En Postman:**
+1. Método: `POST`
+2. URL: `http://localhost:3000/words/create`
+3. Body: Seleccionar **form-data**
+4. Agregar campos:
+
+| KEY | TYPE | VALUE |
+|-----|------|-------|
+| `image` | **File** | [Seleccionar archivo] |
+| `text` | Text | `"vaca"` |
+| `levelId` | Text | `1` |
 
 **Response:**
 ```json
@@ -120,12 +131,38 @@ Crear una palabra asociada a un nivel.
   "data": {
     "id": 1,
     "text": "vaca",
+    "imageUrl": "/images/words/image-1731398472839-234567890.png",
     "level": {
       "id": 1,
       "levelNumber": 1
     }
   }
 }
+```
+
+**Ejemplo con cURL:**
+```bash
+curl -X POST http://localhost:3000/words/create \
+  -F "image=@/ruta/a/imagen.png" \
+  -F "text=vaca" \
+  -F "levelId=1"
+```
+
+**Ejemplo con Flutter:**
+```dart
+var request = http.MultipartRequest(
+  'POST', 
+  Uri.parse('http://localhost:3000/words/create')
+);
+
+request.files.add(
+  await http.MultipartFile.fromPath('image', imageFile.path)
+);
+
+request.fields['text'] = 'vaca';
+request.fields['levelId'] = '1';
+
+var response = await request.send();
 ```
 
 #### GET `/words/all`
@@ -236,11 +273,31 @@ Listar todos los niveles con sus palabras y progreso asociado.
     "levelNumber": 1,
     "description": "Escritura básica",
     "words": [
-      { "id": 1, "text": "casa" },
-      { "id": 2, "text": "mesa" },
-      { "id": 3, "text": "perro" },
-      { "id": 4, "text": "gato" },
-      { "id": 5, "text": "sol" }
+      { 
+        "id": 1, 
+        "text": "casa", 
+        "imageUrl": "/images/words/image-1731398472839-234567890.png"
+      },
+      { 
+        "id": 2, 
+        "text": "mesa",
+        "imageUrl": "/images/words/image-1731398472839-234567890.png"
+      },
+      { 
+        "id": 3, 
+        "text": "perro", 
+        "imageUrl": "/images/words/image-1731398472839-234567890.png"
+      },
+      { 
+        "id": 4, 
+        "text": "gato",
+        "imageUrl": "/images/words/image-1731398472839-234567890.png"
+      },
+      { 
+        "id": 5,
+         "text": "sol", 
+         "imageUrl": "/images/words/image-1731398472839-234567890.png"
+      }
     ],
     "progress": []
   }
@@ -259,7 +316,11 @@ Obtener un nivel específico con sus palabras.
   "levelNumber": 1,
   "description": "Escritura básica",
   "words": [
-    { "id": 1, "text": "casa" }
+    { 
+      "id": 1, 
+      "text": "casa", 
+      "imageUrl": "/images/words/image-1731398472839-234567890.png" 
+    }
   ]
 }
 ```
@@ -600,28 +661,66 @@ Obtener el historial completo de sesiones de juego del usuario.
 ## Cosméticos
 
 #### POST `/cosmetics/create`
-Crear un nuevo cosmético (outfit).
+Crear un nuevo cosmético (outfit) **subiendo una imagen**.
 
-**Body:**
-```json
-{
-  "name": "Superhéroe",
-  "description": "Es un traje de superhéroe",
-  "cost": 100,
-  "imageUrl": "/images/outfits/superhero.png"
-}
-```
+
+**Requisitos:**
+- Formato de imagen: JPG, JPEG, PNG, GIF, WEBP
+- Tamaño máximo: 5MB
+- La imagen se guarda en: `public/images/outfits/`
+
+**En Postman:**
+1. Método: `POST`
+2. URL: `http://localhost:3000/cosmetics/create`
+3. Body: Seleccionar **form-data**
+4. Agregar campos:
+
+| KEY | TYPE | VALUE |
+|-----|------|-------|
+| `image` | **File** | [Seleccionar archivo] |
+| `name` | Text | `"Outfit Pirata"` |
+| `description` | Text | `"Traje de pirata"` |
+| `cost` | Text | `200` |
 
 **Response:**
 ```json
 {
-  "id": 1,
-  "name": "Superhéroe",
-  "description": "Es un traje de superhéroe",
-  "cost": 100,
-  "imageUrl": "/images/outfits/superhero.png",
+  "id": 7,
+  "name": "Outfit Pirata",
+  "description": "Traje de pirata",
+  "cost": 200,
+  "imageUrl": "/images/kjhl",
   "isActive": true
 }
+```
+
+**Nota:** El nombre del archivo se genera automáticamente con timestamp para evitar duplicados.
+
+**Ejemplo con cURL:**
+```bash
+curl -X POST http://localhost:3000/cosmetics/create \
+  -F "image=@/ruta/a/imagen.png" \
+  -F "name=Outfit Pirata" \
+  -F "description=Traje de pirata" \
+  -F "cost=200"
+```
+
+**Ejemplo con Flutter:**
+```dart
+var request = http.MultipartRequest(
+  'POST', 
+  Uri.parse('http://localhost:3000/cosmetics/create')
+);
+
+request.files.add(
+  await http.MultipartFile.fromPath('image', imageFile.path)
+);
+
+request.fields['name'] = 'Outfit Pirata';
+request.fields['description'] = 'Traje de pirata';
+request.fields['cost'] = '200';
+
+var response = await request.send();
 ```
 
 #### POST `/cosmetics/create-samples`

@@ -11,10 +11,17 @@ export class WordsService {
         private readonly wordRepo: Repository<Word>,
         @InjectRepository(Level)
         private readonly levelRepo: Repository<Level>,
-    ) {}
-
-    async create(text: string, levelId: number){
-        const existing = await this.wordRepo.findOne({ where: { text } });
+    ) {}        
+    
+    async create(text: string, levelId: number, imageUrl: string){
+        const cleanText = text?.trim();
+        
+        if (!cleanText) {
+            throw new Error('Text is required');
+        }
+        
+        const existing = await this.wordRepo.findOne({ where: { text: cleanText } });
+                
         if (existing) {
             throw new Error('Word already exists');
         }
@@ -24,7 +31,7 @@ export class WordsService {
             throw new Error('Level not found');
         }
 
-        const word = this.wordRepo.create({ text, level });
+        const word = this.wordRepo.create({ text: cleanText, level, imageUrl });
         return await this.wordRepo.save(word);
     }
 

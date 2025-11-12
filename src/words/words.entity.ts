@@ -9,6 +9,9 @@ export class Word {
     @Column()
     text: string;
 
+    @Column()
+    imageUrl: string;
+
     @ManyToOne(() => Level, (level) => level.words)
     level: Level;
 }
