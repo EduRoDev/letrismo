@@ -19,7 +19,7 @@ export class WordsService {
         if (!cleanText) {
             throw new Error('Text is required');
         }
-        
+
         const existing = await this.wordRepo.findOne({ where: { text: cleanText } });
                 
         if (existing) {
@@ -33,10 +33,14 @@ export class WordsService {
 
         const word = this.wordRepo.create({ text: cleanText, level, imageUrl });
         return await this.wordRepo.save(word);
-    }
-
+    }    
+    
     async findAll(){
-        return await this.wordRepo.find({relations: ['level']});
+        const words = await this.wordRepo.find({relations: ['level']});
+        return words.map(word => ({
+            ...word,
+            imageUrl: this.buildImageUrl(word.imageUrl)
+        }));
     }
 
     async findWord(text: string){
@@ -63,5 +67,17 @@ export class WordsService {
         }
         await this.wordRepo.remove(word);
         return { message: 'Word removed successfully' };
+    }
+
+    private buildImageUrl(relativePath: string): string {
+        if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+            return relativePath;
+        }
+        
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        
+        const cleanPath = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
+        
+        return `${baseUrl}${cleanPath}`;
     }
 }
