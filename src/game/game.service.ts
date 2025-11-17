@@ -276,38 +276,29 @@ export class GameService {
 
         if (session.isCompleted) {
             throw new Error('Game session already completed');
-        }
-
-        // Calcular puntaje basado en palabras correctas y intentos
+        }        // Calcular puntaje basado en palabras correctas
+        // Cada palabra correcta vale 30 puntos fijos, sin importar los intentos
         let totalScore = 0;
         let correctWords = 0;
 
         session.wordsAttempted.forEach(word => {
             if (word.isCorrect) {
                 correctWords++;
-                // Puntaje base de 20 puntos por palabra correcta
-                let wordScore = 20;
-                
-                // Bonus por pocos intentos: 10 puntos extra si lo hace en el primer intento
-                if (word.attempts === 1) {
-                    wordScore += 10;
-                } else if (word.attempts === 2) {
-                    wordScore += 5;
-                }
-                
-                totalScore += wordScore;
+                // Puntaje fijo de 30 puntos por palabra correcta
+                totalScore += 30;
             }
         });
 
-        // Bonus por completar todas las palabras
+        // Bonus por completar todas las palabras: 50 puntos adicionales
+        // Total al completar 5 palabras: (5 × 30) + 50 = 200 puntos
         if (correctWords === 5) {
-            totalScore += 50; // Bonus de 50 puntos por completar todo
+            totalScore += 50;
         }
 
         // Actualizar sesión
         session.finalScore = totalScore;
         session.isCompleted = true;
-        await this.gameRepo.save(session);        // Determinar si pasó el nivel (necesita al menos 3 palabras correctas)
+        await this.gameRepo.save(session);// Determinar si pasó el nivel (necesita al menos 3 palabras correctas)
         const levelPassed = correctWords >= 3;
 
         if (levelPassed) {

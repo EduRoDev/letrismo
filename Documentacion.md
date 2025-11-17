@@ -882,27 +882,14 @@ Bonus completitud: +50 puntos
 Total: 200 puntos
 ```
 
-### Ejemplo de Puntaje Promedio
-```
-Palabra 1: 20 + 5 = 25 puntos (2do intento)
-Palabra 2: 20 + 10 = 30 puntos (1er intento)
-Palabra 3: 0 puntos (incorrecta)
-Palabra 4: 20 + 0 = 20 puntos (3er intento)
-Palabra 5: 20 + 10 = 30 puntos (1er intento)
-Bonus completitud: 0 (no completó las 5)
-----------------------------------------
-Total: 105 puntos
-```
-
 ### Conversión a Puntos de Tienda
 Los puntos del juego se convierten en puntos para gastar en la tienda:
 
 **Fórmula:** `pointsEarned = Math.floor(finalScore * 0.5)`
 
-**Ejemplos:**
+**Ejemplo:**
 - 200 puntos de juego → **100 puntos para la tienda**
-- 165 puntos de juego → **82 puntos para la tienda**
-- 105 puntos de juego → **52 puntos para la tienda**
+
 
 ### Actualización de Puntos del Usuario
 Cuando se finaliza un nivel, se actualizan dos campos:

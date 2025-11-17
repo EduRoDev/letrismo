@@ -16,10 +16,7 @@ export class UserController {
             if (!user) {
                 throw new Error('User creation failed');
             }
-            return {
-                message: 'User created successfully',
-                status: 201,
-            }
+            return user
         } catch (error) {
             throw new HttpException(error.message, 400);
         }
