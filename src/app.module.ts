@@ -14,15 +14,22 @@ import { Word } from './words/words.entity';
 import { GameSession } from './game/game.entity';
 import { Cosmetic } from './cosmetics/cosmetics.entity';
 import { UserCosmetic } from './cosmetics/user-cosmetic.entity';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env`,
+    }),
+
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: process.env.DB_HOST,
       port: 5432,
-      username: 'postgres',
-      password: '123456',      database: 'Letrismo',
+      username: process.env.DB_USER,
+      password: process.env.DB_PASS,      
+      database: process.env.DB_NAME,
       entities: [Level,User,Progress,Word,GameSession,Cosmetic,UserCosmetic],
       synchronize: true,
       autoLoadEntities: true,

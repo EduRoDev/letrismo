@@ -70,11 +70,24 @@ export class GameService {
             },
             words: level.words.map(word => ({
                 id: word.id,
-                text: word.text
+                text: word.text,
+                url: this.buildImageUrl(word.imageUrl)
             })),
             totalWords: level.words.length
         };
     }    
+
+    private buildImageUrl(relativePath: string): string {
+        if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+            return relativePath;
+        }
+        
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        
+        const cleanPath = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
+        
+        return `${baseUrl}${cleanPath}`;
+    }
 
     async checkAnswer(sessionId: number, wordId: number, userAnswer: string) {
         const session = await this.gameRepo.findOne({

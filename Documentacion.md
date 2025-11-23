@@ -872,11 +872,11 @@ Cada palabra correcta otorga puntos según la eficiencia del niño:
 
 ### Ejemplo de Puntaje Máximo
 ```
-Palabra 1: 20 + 10 = 30 puntos (1er intento)
-Palabra 2: 20 + 10 = 30 puntos (1er intento)
-Palabra 3: 20 + 10 = 30 puntos (1er intento)
-Palabra 4: 20 + 10 = 30 puntos (1er intento)
-Palabra 5: 20 + 10 = 30 puntos (1er intento)
+Palabra 1: 30 puntos 
+Palabra 2: 30 puntos 
+Palabra 3: 30 puntos 
+Palabra 4: 30 puntos 
+Palabra 5: 30 puntos 
 Bonus completitud: +50 puntos
 ----------------------------------------
 Total: 200 puntos
