@@ -4,7 +4,7 @@ import { Word } from './words.entity';
 import { Repository } from 'typeorm';
 import { Level } from 'src/levels/levels.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { writeFileSync, unlinkSync } from 'fs';
+import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
 @Injectable()
@@ -36,7 +36,11 @@ export class WordsService {
         }
 
         // Guardar temporalmente el archivo y subirlo a Cloudinary
-        const tempFilePath = join(process.cwd(), 'temp', `${Date.now()}-${file.originalname}`);
+        const tempDir = join(process.cwd(), 'temp');
+        if (!existsSync(tempDir)) {
+            mkdirSync(tempDir, { recursive: true });
+        }
+        const tempFilePath = join(tempDir, `${Date.now()}-${file.originalname}`);
         writeFileSync(tempFilePath, file.buffer);
         
         let imageUrl: string;
@@ -83,7 +87,11 @@ export class WordsService {
         
         // Si se proporciona un nuevo archivo, subir a Cloudinary
         if (file) {
-            const tempFilePath = join(process.cwd(), 'temp', `${Date.now()}-${file.originalname}`);
+            const tempDir = join(process.cwd(), 'temp');
+            if (!existsSync(tempDir)) {
+                mkdirSync(tempDir, { recursive: true });
+            }
+            const tempFilePath = join(tempDir, `${Date.now()}-${file.originalname}`);
             writeFileSync(tempFilePath, file.buffer);
             
             try {

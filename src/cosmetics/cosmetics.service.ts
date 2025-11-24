@@ -5,7 +5,7 @@ import { Cosmetic } from './cosmetics.entity';
 import { UserCosmetic } from './user-cosmetic.entity';
 import { User } from '../user/user.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { writeFileSync, unlinkSync } from 'fs';
+import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
 @Injectable()
@@ -23,7 +23,11 @@ export class CosmeticsService {
     // Crear un nuevo cosmético (para administradores)
     async createCosmetic(name: string, description: string, cost: number, file: Express.Multer.File) {
         // Guardar temporalmente el archivo y subirlo a Cloudinary
-        const tempFilePath = join(process.cwd(), 'temp', `${Date.now()}-${file.originalname}`);
+        const tempDir = join(process.cwd(), 'temp');
+        if (!existsSync(tempDir)) {
+            mkdirSync(tempDir, { recursive: true });
+        }
+        const tempFilePath = join(tempDir, `${Date.now()}-${file.originalname}`);
         writeFileSync(tempFilePath, file.buffer);
         
         let imageUrl: string;
@@ -293,7 +297,11 @@ export class CosmeticsService {
         }
         if (file) {
             // Guardar temporalmente el archivo y subirlo a Cloudinary
-            const tempFilePath = join(process.cwd(), 'temp', `${Date.now()}-${file.originalname}`);
+            const tempDir = join(process.cwd(), 'temp');
+            if (!existsSync(tempDir)) {
+                mkdirSync(tempDir, { recursive: true });
+            }
+            const tempFilePath = join(tempDir, `${Date.now()}-${file.originalname}`);
             writeFileSync(tempFilePath, file.buffer);
             try {
                 const imageUrl = await this.cloudinaryService.uploadImage(tempFilePath);
