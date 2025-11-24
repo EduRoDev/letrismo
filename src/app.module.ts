@@ -15,6 +15,7 @@ import { GameSession } from './game/game.entity';
 import { Cosmetic } from './cosmetics/cosmetics.entity';
 import { UserCosmetic } from './cosmetics/user-cosmetic.entity';
 import { ConfigModule } from '@nestjs/config';
+import { CloudinaryService } from './cloudinary/cloudinary.service';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ConfigModule } from '@nestjs/config';
     }),    
     
     UserModule, ProgressModule, WordsModule, LevelsModule, GameModule, CosmeticsModule],
+  providers: [CloudinaryService],
   
 })
 export class AppModule { }

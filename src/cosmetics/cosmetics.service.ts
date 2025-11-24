@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { Cosmetic } from './cosmetics.entity';
 import { UserCosmetic } from './user-cosmetic.entity';
 import { User } from '../user/user.entity';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { writeFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class CosmeticsService {
@@ -14,10 +17,30 @@ export class CosmeticsService {
         private readonly userCosmeticRepo: Repository<UserCosmetic>,
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
+        private readonly cloudinaryService: CloudinaryService,
     ) {}
 
     // Crear un nuevo cosmético (para administradores)
-    async createCosmetic(name: string, description: string, cost: number, imageUrl: string) {
+    async createCosmetic(name: string, description: string, cost: number, file: Express.Multer.File) {
+        // Guardar temporalmente el archivo y subirlo a Cloudinary
+        const tempFilePath = join(process.cwd(), 'temp', `${Date.now()}-${file.originalname}`);
+        writeFileSync(tempFilePath, file.buffer);
+        
+        let imageUrl: string;
+        try {
+            imageUrl = await this.cloudinaryService.uploadImage(tempFilePath);
+            // Eliminar el archivo temporal después de subirlo
+            unlinkSync(tempFilePath);
+        } catch (error) {
+            // Asegurarse de eliminar el archivo temporal incluso si falla la subida
+            try {
+                unlinkSync(tempFilePath);
+            } catch (e) {
+                // Ignorar error si el archivo no existe
+            }
+            throw error;
+        }
+
         const cosmetic = this.cosmeticRepo.create({
             name,
             description,
@@ -114,7 +137,7 @@ export class CosmeticsService {
             name: cosmetic.name,
             description: cosmetic.description,
             cost: cosmetic.cost,
-            imageUrl: this.buildImageUrl(cosmetic.imageUrl),
+            imageUrl: cosmetic.imageUrl,
             owned: ownedCosmeticIds.includes(cosmetic.id),
             canAfford: user.availablePoints >= cosmetic.cost && !ownedCosmeticIds.includes(cosmetic.id)
         }));
@@ -223,10 +246,10 @@ export class CosmeticsService {
             totalOutfits: totalOutfits,
             currentOutfit: equippedOutfit ? {
                 name: equippedOutfit.cosmetic.name,
-                imageUrl: this.buildImageUrl(equippedOutfit.cosmetic.imageUrl)
+                imageUrl: equippedOutfit.cosmetic.imageUrl
             } : {
                 name: "Outfit Básico",
-                imageUrl: this.buildImageUrl("/images/outfits/default.png")
+                imageUrl: "/images/outfits/default.png"
             }
         };
     }
@@ -248,25 +271,10 @@ export class CosmeticsService {
             id: uc.cosmetic.id,
             name: uc.cosmetic.name,
             description: uc.cosmetic.description,
-            imageUrl: this.buildImageUrl(uc.cosmetic.imageUrl),
+            imageUrl: uc.cosmetic.imageUrl,
             isEquipped: uc.isEquipped,
             purchaseDate: uc.purchaseDate
         }));
     }
 
-    // Método privado para construir URLs completas de imágenes
-    private buildImageUrl(relativePath: string): string {
-        // Si ya es una URL completa, la devolvemos tal como está
-        if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
-            return relativePath;
-        }
-        
-        // Construir URL completa para archivos estáticos
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-        
-        // Asegurar que el path empiece con /
-        const cleanPath = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
-        
-        return `${baseUrl}${cleanPath}`;
-    }
 }
