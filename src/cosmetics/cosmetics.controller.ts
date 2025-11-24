@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFile, BadRequestException, Patch } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CosmeticsService } from './cosmetics.service';
 
@@ -41,6 +41,34 @@ export class CosmeticsController {
     @Post('create-samples')
     async createSampleOutfits() {
         return await this.cosmeticsService.createSampleOutfits();
+    }
+
+    @Patch('edit/:id')
+    @UseInterceptors(FileInterceptor('image', {
+        fileFilter: (req, file, callback) => {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+                return callback(new BadRequestException('Solo se permiten archivos de imagen (jpg, jpeg, png, gif, webp)'), false);
+            }
+            callback(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024 
+        }
+    }))
+    async editCosmetic(
+        @Param('id') id: number,
+        @UploadedFile() file?: Express.Multer.File,
+        @Body('name') name?: string,
+        @Body('description') description?: string,
+        @Body('cost') cost?: string
+    ) {
+        return await this.cosmeticsService.editCosmetic(
+            Number(id),
+            name,
+            description,
+            cost ? Number(cost) : undefined,
+            file
+        );
     }
 
     @Get('shop/:userName')

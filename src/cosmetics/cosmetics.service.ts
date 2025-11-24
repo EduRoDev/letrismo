@@ -277,4 +277,39 @@ export class CosmeticsService {
         }));
     }
 
+    async editCosmetic(id: number, name?: string, description?: string, cost?: number, file?: Express.Multer.File) {
+        const cosmetic = await this.cosmeticRepo.findOne({ where: { id } });
+        if (!cosmetic) {
+            throw new HttpException('Cosmetic not found', 404);
+        }
+        if (name) {
+            cosmetic.name = name;
+        }
+        if (description) {
+            cosmetic.description = description;
+        }
+        if (cost) {
+            cosmetic.cost = cost;
+        }
+        if (file) {
+            // Guardar temporalmente el archivo y subirlo a Cloudinary
+            const tempFilePath = join(process.cwd(), 'temp', `${Date.now()}-${file.originalname}`);
+            writeFileSync(tempFilePath, file.buffer);
+            try {
+                const imageUrl = await this.cloudinaryService.uploadImage(tempFilePath);
+                cosmetic.imageUrl = imageUrl;
+                // Eliminar el archivo temporal después de subirlo
+                unlinkSync(tempFilePath);
+            } catch (error) {
+                // Asegurarse de eliminar el archivo temporal incluso si falla la subida
+                try {
+                    unlinkSync(tempFilePath);
+                } catch (e) {
+                    // Ignorar error si el archivo no existe
+                }
+                throw error;
+            }
+        }
+        return await this.cosmeticRepo.save(cosmetic);
+    }
 }

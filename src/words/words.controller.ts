@@ -59,8 +59,23 @@ export class WordsController {
 
 
     @Patch('/edit/:id')
-    async editWord(@Param('id') id: number, @Body('newText') newText: string) {
-        const word = await this.wordService.editWord(id, newText);
+    @UseInterceptors(FileInterceptor('image', {
+        fileFilter: (req, file, callback) => {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+                return callback(new BadRequestException('Solo se permiten archivos de imagen (jpg, jpeg, png, gif, webp)'), false);
+            }
+            callback(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024 
+        }
+    }))
+    async editWord(
+        @Param('id') id: number,
+        @Body('newText') newText: string,
+        @UploadedFile() file?: Express.Multer.File
+    ) {
+        const word = await this.wordService.editWord(id, newText, file);
         if (!word) {
             throw new HttpException('Failed to update word', 400);
         }

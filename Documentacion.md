@@ -204,16 +204,27 @@ Busca una palabra específica por su texto.
 ```
 
 #### PATCH `/words/edit/:id`
-Edita el texto de una palabra existente.
+Edita el texto y/o la imagen de una palabra existente.
+
+**IMPORTANTE:** Este endpoint usa `multipart/form-data` para subir archivos (opcional).
 
 **Ejemplo:** `/words/edit/1`
 
-**Body:**
-```json
-{
-  "newText": "perro"
-}
-```
+**Requisitos (imagen opcional):**
+- Formato de imagen: JPG, JPEG, PNG, GIF, WEBP
+- Tamaño máximo: 5MB
+- La imagen se sube a Cloudinary
+
+**En Postman:**
+1. Método: `PATCH`
+2. URL: `http://localhost:3000/words/edit/1`
+3. Body: Seleccionar **form-data**
+4. Agregar campos (todos opcionales):
+
+| KEY | TYPE | VALUE |
+|-----|------|-------|
+| `image` | **File** | [Seleccionar archivo] (opcional) |
+| `newText` | Text | `"perro"` (opcional) |
 
 **Response:**
 ```json
@@ -221,9 +232,22 @@ Edita el texto de una palabra existente.
   "message": "Word updated successfully",
   "data": {
     "id": 1,
-    "text": "perro"
+    "text": "perro",
+    "imageUrl": "https://res.cloudinary.com/.../image.png"
   }
 }
+```
+
+**Casos de uso:**
+- **Solo actualizar texto:** Enviar solo `newText`
+- **Solo actualizar imagen:** Enviar solo `image`
+- **Actualizar ambos:** Enviar `newText` e `image`
+
+**Ejemplo con cURL (actualizar ambos):**
+```bash
+curl -X PATCH http://localhost:3000/words/edit/1 \
+  -F "image=@/ruta/a/nueva-imagen.png" \
+  -F "newText=perro"
 ```
 
 #### DELETE `/words/delete/:id`
@@ -739,6 +763,58 @@ Crear cosméticos de ejemplo predefinidos (6 outfits).
     { "id": 6, "name": "Conjunto Deportivo", "cost": 150 }
   ]
 }
+```
+
+#### PATCH `/cosmetics/edit/:id`
+Editar un cosmético existente (nombre, descripción, costo y/o imagen).
+
+**IMPORTANTE:** Este endpoint usa `multipart/form-data` para subir archivos (opcional).
+
+**Ejemplo:** `/cosmetics/edit/2`
+
+**Requisitos (imagen opcional):**
+- Formato de imagen: JPG, JPEG, PNG, GIF, WEBP
+- Tamaño máximo: 5MB
+- La imagen se sube a Cloudinary
+
+**En Postman:**
+1. Método: `PATCH`
+2. URL: `http://localhost:3000/cosmetics/edit/2`
+3. Body: Seleccionar **form-data**
+4. Agregar campos (todos opcionales):
+
+| KEY | TYPE | VALUE |
+|-----|------|-------|
+| `image` | **File** | [Seleccionar archivo] (opcional) |
+| `name` | Text | `"Outfit Casual Premium"` (opcional) |
+| `description` | Text | `"Ropa muy cómoda"` (opcional) |
+| `cost` | Text | `120` (opcional) |
+
+**Response:**
+```json
+{
+  "id": 2,
+  "name": "Outfit Casual Premium",
+  "description": "Ropa muy cómoda",
+  "cost": 120,
+  "imageUrl": "https://res.cloudinary.com/.../image.png",
+  "isActive": true
+}
+```
+
+**Casos de uso:**
+- **Solo actualizar precio:** Enviar solo `cost`
+- **Solo actualizar imagen:** Enviar solo `image`
+- **Actualizar nombre y descripción:** Enviar `name` y `description`
+- **Actualizar todo:** Enviar todos los campos
+
+**Ejemplo con cURL (actualizar todo):**
+```bash
+curl -X PATCH http://localhost:3000/cosmetics/edit/2 \
+  -F "image=@/ruta/a/nueva-imagen.png" \
+  -F "name=Outfit Casual Premium" \
+  -F "description=Ropa muy cómoda" \
+  -F "cost=120"
 ```
 
 #### GET `/cosmetics/shop/:userName`

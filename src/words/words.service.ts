@@ -71,12 +71,37 @@ export class WordsService {
         return word;
     }
 
-    async editWord(id: number, newText: string){
+    async editWord(id: number, newText: string, file?: Express.Multer.File){
         const word = await this.wordRepo.findOne({ where: { id } });
         if (!word) {
             throw new Error('Word not found');
         }
-        word.text = newText;
+        
+        if (newText) {
+            word.text = newText;
+        }
+        
+        // Si se proporciona un nuevo archivo, subir a Cloudinary
+        if (file) {
+            const tempFilePath = join(process.cwd(), 'temp', `${Date.now()}-${file.originalname}`);
+            writeFileSync(tempFilePath, file.buffer);
+            
+            try {
+                const newImageUrl = await this.cloudinaryService.uploadImage(tempFilePath);
+                word.imageUrl = newImageUrl;
+                // Eliminar el archivo temporal
+                unlinkSync(tempFilePath);
+            } catch (error) {
+                // Asegurarse de eliminar el archivo temporal incluso si falla la subida
+                try {
+                    unlinkSync(tempFilePath);
+                } catch (e) {
+                    // Ignorar error si el archivo no existe
+                }
+                throw error;
+            }
+        }
+        
         return await this.wordRepo.save(word);
     }
 
