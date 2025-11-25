@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFile, BadRequestException, Patch } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { CosmeticsService } from './cosmetics.service';
 
 @Controller('cosmetics')
@@ -10,15 +8,6 @@ export class CosmeticsController {
 
     @Post('create')
     @UseInterceptors(FileInterceptor('image', {
-        storage: diskStorage({
-            destination: './public/images/outfits',
-            filename: (req, file, callback) => {
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                const ext = extname(file.originalname);
-                const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-                callback(null, filename);
-            }
-        }),
         fileFilter: (req, file, callback) => {
             if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
                 return callback(new BadRequestException('Solo se permiten archivos de imagen (jpg, jpeg, png, gif, webp)'), false);
@@ -30,7 +19,7 @@ export class CosmeticsController {
         }
     }))
     async createCosmetic(
-        @UploadedFile() file: any,
+        @UploadedFile() file: Express.Multer.File,
         @Body() body: {
             name: string;
             description: string;
@@ -41,19 +30,45 @@ export class CosmeticsController {
             throw new BadRequestException('Se requiere una imagen');
         }
 
-        const imageUrl = `/images/outfits/${file.filename}`;
-
         return await this.cosmeticsService.createCosmetic(
             body.name,
             body.description,
             Number(body.cost),
-            imageUrl
+            file
         );
     }
 
     @Post('create-samples')
     async createSampleOutfits() {
         return await this.cosmeticsService.createSampleOutfits();
+    }
+
+    @Patch('edit/:id')
+    @UseInterceptors(FileInterceptor('image', {
+        fileFilter: (req, file, callback) => {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+                return callback(new BadRequestException('Solo se permiten archivos de imagen (jpg, jpeg, png, gif, webp)'), false);
+            }
+            callback(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024 
+        }
+    }))
+    async editCosmetic(
+        @Param('id') id: number,
+        @UploadedFile() file?: Express.Multer.File,
+        @Body('name') name?: string,
+        @Body('description') description?: string,
+        @Body('cost') cost?: string
+    ) {
+        return await this.cosmeticsService.editCosmetic(
+            Number(id),
+            name,
+            description,
+            cost ? Number(cost) : undefined,
+            file
+        );
     }
 
     @Get('shop/:userName')
