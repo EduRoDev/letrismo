@@ -227,47 +227,24 @@ export class GameService {
         const userLetters = userAnswer.split('').sort();
         const correctLetters = correctWord.split('').sort();
         return userLetters.join('') === correctLetters.join('');
-    }    
-    
-    private getLevelSpecificHint(levelNumber: number, correctWord: string, userAnswer: string): string {
-        const focus = this.getLevelTherapeuticFocus(levelNumber);
+    }        private getLevelSpecificHint(levelNumber: number, correctWord: string, userAnswer: string): string {
+        // Pistas específicas por nivel basadas en las palabras reales
+        // Estas pistas SIEMPRE se muestran según el nivel, sin importar el tipo de error
+        const hints: { [key: number]: string } = {
+            1: 'Piensa en cómo suena la palabra. ¿Qué letras hacen ese sonido?',
+            2: 'Esta palabra tiene letras dobles. ¿Cuáles suelen ir juntas?',
+            3: 'Presta atención al inicio de la palabra. ¿Cómo suena la primera letra?',
+            4: 'Piensa en palabras similares que conozcas. ¿Cómo se escriben?',
+            5: 'Lee la palabra en voz alta despacio. ¿Escuchas todas las letras?',
+            6: 'Es una palabra común. Piensa en cómo la has visto escrita antes.',
+            7: 'Divide la palabra en partes más pequeñas. ¿Cómo suena cada sílaba?',
+            8: 'Esta palabra puede tener una letra silenciosa o un sonido especial.',
+            9: 'Recuerda las reglas ortográficas que has aprendido. ¿Cuál aplica aquí?',
+            10: 'Piensa en la familia de palabras. ¿Hay otras palabras similares?'
+        };
         
-        switch (focus) {
-            case 'b_v_confusion':
-                if (correctWord.includes('b')) {
-                    return `Nivel ${levelNumber} - Pista B: Se escribe con B (antes de consonante o después de M).`;
-                } else if (correctWord.includes('v')) {
-                    return `Nivel ${levelNumber} - Pista V: Se escribe con V (después de N o terminaciones -ava, -ave).`;
-                }
-                break;
-                
-            case 'c_s_z_confusion':
-                if (correctWord.includes('c')) {
-                    return `Nivel ${levelNumber} - Pista C: Sonido fuerte antes de A, O, U.`;
-                } else if (correctWord.includes('s')) {
-                    return `Nivel ${levelNumber} - Pista S: Sonido suave.`;
-                } else if (correctWord.includes('z')) {
-                    return `Nivel ${levelNumber} - Pista Z: Sonido fuerte antes de A, O, U.`;
-                }
-                break;
-                
-            case 'accent_practice':
-                return `Nivel ${levelNumber} - Pista de acentos: Pronuncia fuerte la sílaba tónica y coloca la tilde.`;
-                
-            case 'letter_omission':
-                return `Nivel ${levelNumber} - Pista: Te falta una letra. Pronuncia despacio cada sílaba.`;
-                
-            case 'letter_inversion':
-                return `Nivel ${levelNumber} - Pista: Revisa el orden de las letras, ve despacio.`;
-                
-            case 'syllable_practice':
-                return `Nivel ${levelNumber} - Pista silábica: ${this.divideBySyllables(correctWord)}`;
-                
-            default:
-                return `Nivel ${levelNumber} - Pista: Divide en sílabas: ${this.divideBySyllables(correctWord)}`;
-        }
-        
-        return `Nivel ${levelNumber} - Revisa letra por letra: ${this.divideBySyllables(correctWord)}`;
+        // Retornar siempre la pista del nivel correspondiente
+        return hints[levelNumber] || 'Piensa bien en cómo se escribe. ¡Tú puedes!';
     }
 
     // Dividir palabra en sílabas (simplificado)
